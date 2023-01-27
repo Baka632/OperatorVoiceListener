@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OperatorVoiceListener.Main (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "OperatorVoiceListener.Main (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
