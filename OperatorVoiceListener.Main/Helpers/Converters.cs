@@ -1,4 +1,6 @@
-﻿namespace OperatorVoiceListener.Main.Helpers
+﻿using Windows.ApplicationModel.Resources;
+
+namespace OperatorVoiceListener.Main.Helpers
 {
     public class OperatorVoiceTypeToStringConverter : IValueConverter
     {
@@ -8,12 +10,12 @@
             {
                 OperatorVoiceType OperatorVoiceType => OperatorVoiceType switch
                 {
-                    OperatorVoiceType.ChineseMandarin => "中文-普通话",
-                    OperatorVoiceType.ChineseRegional => "中文-方言",
-                    OperatorVoiceType.Japanese => "日语",
-                    OperatorVoiceType.English => "英语",
-                    OperatorVoiceType.Korean => "韩语",
-                    OperatorVoiceType.Italian => "意大利语",
+                    OperatorVoiceType.ChineseMandarin => ReswHelper.GetReswString("ChineseMandarin"),
+                    OperatorVoiceType.ChineseRegional => ReswHelper.GetReswString("ChineseRegional"),
+                    OperatorVoiceType.Japanese => ReswHelper.GetReswString("Japanese"),
+                    OperatorVoiceType.English => ReswHelper.GetReswString("English"),
+                    OperatorVoiceType.Korean => ReswHelper.GetReswString("Korean"),
+                    OperatorVoiceType.Italian => ReswHelper.GetReswString("Italian"),
                     _ => string.Empty,
                 },
                 _ => DependencyProperty.UnsetValue,

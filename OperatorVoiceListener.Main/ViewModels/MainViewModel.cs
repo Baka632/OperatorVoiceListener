@@ -10,6 +10,7 @@ using Microsoft.UI.Dispatching;
 using System.Collections.Immutable;
 using OperatorVoiceListener.Main.Models;
 using OperatorVoiceListener.Main.Helpers;
+using Windows.ApplicationModel.Resources;
 
 namespace OperatorVoiceListener.Main.ViewModels
 {
@@ -87,11 +88,6 @@ namespace OperatorVoiceListener.Main.ViewModels
 
         public async Task StartVoicePlay()
         {
-            if (IsSubtitleVisable == false)
-            {
-                IsSubtitleVisable = true;
-            }
-
             ResetInfoBar();
             IsLoadingAudio = true;
             OperatorVoiceItem voiceItem = new(OperatorCodename, VoiceID, string.Empty, string.Empty, VoiceType);
@@ -107,21 +103,21 @@ namespace OperatorVoiceListener.Main.ViewModels
 
             try
             {
-                byte[] voice = await resourceHelper.GetOperatorVoiceAsync(voiceItem);
-
                 string title;
                 string cv;
                 string subtitle;
                 string lang = voiceItem.VoiceType switch
                 {
-                    OperatorVoiceType.ChineseMandarin => "中文-普通话",
-                    OperatorVoiceType.ChineseRegional => "中文-方言",
-                    OperatorVoiceType.Japanese => "日语",
-                    OperatorVoiceType.English => "英语",
-                    OperatorVoiceType.Korean => "韩语",
-                    OperatorVoiceType.Italian => "意大利语",
+                    OperatorVoiceType.ChineseMandarin => ReswHelper.GetReswString("ChineseMandarin"),
+                    OperatorVoiceType.ChineseRegional => ReswHelper.GetReswString("ChineseRegional"),
+                    OperatorVoiceType.Japanese => ReswHelper.GetReswString("Japanese"),
+                    OperatorVoiceType.English => ReswHelper.GetReswString("English"),
+                    OperatorVoiceType.Korean => ReswHelper.GetReswString("Korean"),
+                    OperatorVoiceType.Italian => ReswHelper.GetReswString("Italian"),
                     _ => string.Empty,
                 };
+
+                byte[] voice = await resourceHelper.GetOperatorVoiceAsync(voiceItem);
                 (OperatorVoiceInfo?, OperatorVoiceItem?) voiceDetails = OperatorVoiceItemHelper.GetFullVoiceDetail(voiceItem);
                 if (voiceDetails.Item1 is not null && voiceDetails.Item2 is not null)
                 {
@@ -148,10 +144,17 @@ namespace OperatorVoiceListener.Main.ViewModels
                 Subtitle = subtitle;
                 Cv = cv;
                 await AudioService.PlayOperatorVoice(voice, title, subtitle, cv);
+                if (IsSubtitleVisable == false)
+                {
+                    IsSubtitleVisable = true;
+                }
             }
-            catch
+            catch (ArgumentException)
             {
-                SetInfoBar(true, "无法找到语音文件", "请检查你输入的语音ID是否正确", InfoBarSeverity.Error);
+                SetInfoBar(true,
+                           ReswHelper.GetReswString("VoiceFileNotFoundTitle"),
+                           ReswHelper.GetReswString("VoiceFileNotFoundMessage"),
+                           InfoBarSeverity.Error);
             }
             IsLoadingAudio = false;
         }

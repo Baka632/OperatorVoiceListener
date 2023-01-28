@@ -19,17 +19,15 @@
 
     <StackPanel Margin="11,10,11,0">
         <InfoBar
-            Title="注意"
+            x:Uid="WinUI3BugWarningInfoBar"
             IsClosable="True"
             IsOpen="True"
-            Message="由于WinUI 3的一个bug，OGG音频播放30秒后会出现解码错误，这时请重新开始播放并将播放进度调节到自己需要的位置。"
             Severity="Warning" />
 
         <AutoSuggestBox
+            x:Uid="SearchCodenameAutoSuggestBox"
             Margin="0,0,0,5"
-            Header="干员代号"
             LostFocus="OnSearchCodenameAutoSuggestBoxLostFocus"
-            PlaceholderText="输入干员代号"
             QuerySubmitted="OnSearchCodenameAutoSuggestBoxQuerySubmitted"
             TextChanged="OnSearchCodenameAutoSuggestBoxTextChanged">
             <AutoSuggestBox.ItemTemplate>
@@ -44,11 +42,10 @@
         </AutoSuggestBox>
 
         <AutoSuggestBox
+            x:Uid="SearchVoiceIdAutoSuggestBox"
             Margin="0,0,0,10"
             GotFocus="OnSearchVoiceIdAutoSuggestBoxGotFocus"
-            Header="语音ID"
             LostFocus="OnSearchVoiceIDAutoSuggestBoxLostFocus"
-            PlaceholderText="输入语音ID"
             QuerySubmitted="OnSearchVoiceIDAutoSuggestBoxQuerySubmitted">
             <AutoSuggestBox.ItemTemplate>
                 <DataTemplate x:DataType="models:OperatorIdTitleInfo">
@@ -61,12 +58,11 @@
             </AutoSuggestBox.ItemTemplate>
         </AutoSuggestBox>
 
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+        <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
             <ComboBox
+                x:Uid="OperatorVoiceTypeComboBox"
                 HorizontalAlignment="Center"
-                Header="语音种类"
                 ItemsSource="{x:Bind ViewModel.OperatorVoiceTypes}"
-                PlaceholderText="选择语音种类"
                 SelectedIndex="{x:Bind ViewModel.VoiceTypeIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="modelsOp:OperatorVoiceType">
@@ -75,11 +71,14 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
-            <StackPanel Orientation="Horizontal" Margin="10,0,0,0" VerticalAlignment="Bottom">
+            <StackPanel
+                Margin="10,0,0,0"
+                VerticalAlignment="Bottom"
+                Orientation="Horizontal">
                 <Button
+                    x:Uid="StartVoicePlayButton"
                     Margin="0,0,5,0"
                     Click="StartVoicePlay"
-                    Content="开始播放"
                     IsEnabled="{x:Bind viewmodels:MainViewModel.ReverseBoolean(ViewModel.IsLoadingAudio), Mode=OneWay}">
                     <Button.KeyboardAccelerators>
                         <KeyboardAccelerator Key="P" Modifiers="Control" />
@@ -100,12 +99,12 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             ExpandDirection="Down"
-            Header="信息"
+            x:Uid="InfomationExpander"
             IsExpanded="True"
             Visibility="{x:Bind ViewModel.IsSubtitleVisable, Mode=OneWay}">
             <StackPanel>
                 <TextBlock FontSize="16" TextWrapping="Wrap">
-                    <Run FontWeight="Bold" Text="配音：" />
+                    <Run FontWeight="Bold" x:Uid="CvTextBlockRun" />
                     <Run Text="{x:Bind ViewModel.Cv, Mode=OneWay}" />
                 </TextBlock>
 

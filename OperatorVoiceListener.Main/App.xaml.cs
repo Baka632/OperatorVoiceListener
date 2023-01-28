@@ -19,6 +19,8 @@ namespace OperatorVoiceListener.Main
         /// </summary>
         public App()
         {
+            //Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "en-US";
+            //Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "zh-CN";
             this.InitializeComponent();
         }
 
