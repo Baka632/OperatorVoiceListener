@@ -6,7 +6,9 @@
     xmlns:helper="using:OperatorVoiceListener.Main.Helpers"
     xmlns:local="using:OperatorVoiceListener.Main.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:OperatorVoiceListener.Main.Models"
     xmlns:modelsOp="using:ArknightsResources.Operators.Models"
+    xmlns:sys="using:System"
     xmlns:viewmodels="using:OperatorVoiceListener.Main.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
     Background="Transparent"
@@ -16,42 +18,75 @@
     </Page.Resources>
 
     <StackPanel Margin="11,10,11,0">
-        <TextBox
+        <InfoBar
+            Title="注意"
+            IsClosable="True"
+            IsOpen="True"
+            Message="由于WinUI 3的一个bug，OGG音频播放30秒后会出现解码错误，这时请重新开始播放并将播放进度调节到自己需要的位置。"
+            Severity="Warning" />
+
+        <AutoSuggestBox
             Margin="0,0,0,5"
             Header="干员代号"
-            IsSpellCheckEnabled="False"
+            LostFocus="OnSearchCodenameAutoSuggestBoxLostFocus"
             PlaceholderText="输入干员代号"
-            Text="{x:Bind ViewModel.OperatorCodename, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-        <TextBox
-            Margin="0,0,0,10"
-            Header="语音ID"
-            IsSpellCheckEnabled="False"
-            PlaceholderText="输入语音ID"
-            Text="{x:Bind ViewModel.VoiceID, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-        <ComboBox
-            Margin="0,0,0,5"
-            Header="语音种类"
-            ItemsSource="{x:Bind ViewModel.OperatorVoiceTypes}"
-            PlaceholderText="选择语音种类"
-            SelectedIndex="{x:Bind ViewModel.VoiceTypeIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate x:DataType="modelsOp:OperatorVoiceType">
-                    <TextBlock Text="{x:Bind Converter={StaticResource OpVoiceTypeToStr}}" />
+            QuerySubmitted="OnSearchCodenameAutoSuggestBoxQuerySubmitted"
+            TextChanged="OnSearchCodenameAutoSuggestBoxTextChanged">
+            <AutoSuggestBox.ItemTemplate>
+                <DataTemplate x:DataType="models:OperatorCodenameInfo">
+                    <TextBlock>
+                        <Run Text="{x:Bind Codename}" />
+                        <Run Text=" | " />
+                        <Run Text="{x:Bind Name}" />
+                    </TextBlock>
                 </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+            </AutoSuggestBox.ItemTemplate>
+        </AutoSuggestBox>
 
-        <StackPanel Margin="0,15,0,0" Orientation="Horizontal">
-            <Button
-                Margin="0,0,5,0"
-                Click="StartVoicePlay"
-                Content="开始播放"
-                IsEnabled="{x:Bind viewmodels:MainViewModel.ReverseBoolean(ViewModel.IsLoadingAudio), Mode=OneWay}">
-                <Button.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="P" Modifiers="Control" />
-                </Button.KeyboardAccelerators>
-            </Button>
-            <ProgressRing IsActive="{x:Bind ViewModel.IsLoadingAudio, Mode=OneWay}" />
+        <AutoSuggestBox
+            Margin="0,0,0,10"
+            GotFocus="OnSearchVoiceIdAutoSuggestBoxGotFocus"
+            Header="语音ID"
+            LostFocus="OnSearchVoiceIDAutoSuggestBoxLostFocus"
+            PlaceholderText="输入语音ID"
+            QuerySubmitted="OnSearchVoiceIDAutoSuggestBoxQuerySubmitted">
+            <AutoSuggestBox.ItemTemplate>
+                <DataTemplate x:DataType="models:OperatorIdTitleInfo">
+                    <TextBlock>
+                        <Run Text="{x:Bind Id}" />
+                        <Run Text=" | " />
+                        <Run Text="{x:Bind Title}" />
+                    </TextBlock>
+                </DataTemplate>
+            </AutoSuggestBox.ItemTemplate>
+        </AutoSuggestBox>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+            <ComboBox
+                HorizontalAlignment="Center"
+                Header="语音种类"
+                ItemsSource="{x:Bind ViewModel.OperatorVoiceTypes}"
+                PlaceholderText="选择语音种类"
+                SelectedIndex="{x:Bind ViewModel.VoiceTypeIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="modelsOp:OperatorVoiceType">
+                        <TextBlock Text="{x:Bind Converter={StaticResource OpVoiceTypeToStr}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <StackPanel Orientation="Horizontal" Margin="10,0,0,0" VerticalAlignment="Bottom">
+                <Button
+                    Margin="0,0,5,0"
+                    Click="StartVoicePlay"
+                    Content="开始播放"
+                    IsEnabled="{x:Bind viewmodels:MainViewModel.ReverseBoolean(ViewModel.IsLoadingAudio), Mode=OneWay}">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="P" Modifiers="Control" />
+                    </Button.KeyboardAccelerators>
+                </Button>
+                <ProgressRing IsActive="{x:Bind ViewModel.IsLoadingAudio, Mode=OneWay}" />
+            </StackPanel>
         </StackPanel>
 
         <InfoBar
@@ -60,6 +95,26 @@
             IsOpen="{x:Bind ViewModel.InfoBarOpen, Mode=OneWay}"
             Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}"
             Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}" />
+
+        <Expander
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            ExpandDirection="Down"
+            Header="信息"
+            IsExpanded="True"
+            Visibility="{x:Bind ViewModel.IsSubtitleVisable, Mode=OneWay}">
+            <StackPanel>
+                <TextBlock FontSize="16" TextWrapping="Wrap">
+                    <Run FontWeight="Bold" Text="配音：" />
+                    <Run Text="{x:Bind ViewModel.Cv, Mode=OneWay}" />
+                </TextBlock>
+
+                <TextBlock FontSize="16" TextWrapping="Wrap">
+                    <Run FontWeight="Bold" Text="{x:Bind sys:String.Format('{0}：', ViewModel.Title), Mode=OneWay}" />
+                    <Run Text="{x:Bind ViewModel.Subtitle, Mode=OneWay}" />
+                </TextBlock>
+            </StackPanel>
+        </Expander>
 
         <MediaPlayerElement x:Name="MediaPlayerElement" AreTransportControlsEnabled="True" />
     </StackPanel>

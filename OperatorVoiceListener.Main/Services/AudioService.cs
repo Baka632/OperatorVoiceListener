@@ -1,10 +1,6 @@
-﻿using System.Collections.Immutable;
-using System.Diagnostics;
-using Windows.ApplicationModel;
-using Windows.Foundation.Collections;
+﻿using Windows.Foundation;
 using Windows.Media.Core;
 using Windows.Media.Playback;
-using Windows.Storage;
 using Windows.Storage.Streams;
 
 namespace OperatorVoiceListener.Main.Services
@@ -12,8 +8,6 @@ namespace OperatorVoiceListener.Main.Services
     public sealed class AudioService
     {
         public MediaPlayer Player { get; }
-        private readonly ImmutableDictionary<string, string> OpCodenameToNameMapping;
-        private readonly ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMapping;
 
         public AudioService()
         {
@@ -22,10 +16,6 @@ namespace OperatorVoiceListener.Main.Services
                 AudioCategory = MediaPlayerAudioCategory.Media
             };
             Player.MediaEnded += OnPlayerMediaEnded;
-            OperatorTextResourceHelper textResourceHelper = new(ArknightsResources.Operators.TextResources.Properties.Resources.ResourceManager);
-
-            OpCodenameToNameMapping = textResourceHelper.GetOperatorCodenameMapping(AvailableCultureInfos.ChineseSimplifiedCultureInfo);
-            OpCodenameToVoiceMapping = textResourceHelper.GetAllOperatorVoiceInfos(AvailableCultureInfos.ChineseSimplifiedCultureInfo);
         }
 
         private void OnPlayerMediaEnded(MediaPlayer sender, object args)
@@ -34,46 +24,25 @@ namespace OperatorVoiceListener.Main.Services
             sender.PlaybackSession.Position = TimeSpan.Zero;
         }
 
-        public void PlayOperatorVoice(byte[] voice, OperatorVoiceItem voiceItem)
+        public async Task PlayOperatorVoice(byte[] voice, string title, string subtitle, string cv)
         {
             Player.Pause();
             MediaPlaybackSession playbackSession = Player.PlaybackSession;
             playbackSession.Position = TimeSpan.Zero;
 
-            MediaSource source = MediaSource.CreateFromStream(new MemoryStream(voice).AsRandomAccessStream(), "audio/ogg");
+            InMemoryRandomAccessStream stream = new();
+            IBuffer buffer = WindowsRuntimeBuffer.Create(voice, 0, voice.Length, voice.Length);
+            await stream.WriteAsync(buffer);
+
+            MediaSource source = MediaSource.CreateFromStream(stream, "audio/ogg");
             MediaPlaybackItem media = new(source);
 
-            string lang = voiceItem.VoiceType switch
-            {
-                OperatorVoiceType.ChineseMandarin => "中文-普通话",
-                OperatorVoiceType.ChineseRegional => "中文-方言",
-                OperatorVoiceType.Japanese => "日语",
-                OperatorVoiceType.English => "英语",
-                OperatorVoiceType.Korean => "韩语",
-                OperatorVoiceType.Italian => "意大利语",
-                _ => string.Empty,
-            };
             MediaItemDisplayProperties props = media.GetDisplayProperties();
             props.Type = Windows.Media.MediaPlaybackType.Video;
-            string codename = voiceItem.CharactorCodename.Split('_')[0];
-            
-            if (OpCodenameToVoiceMapping.TryGetValue(codename, out var voiceInfos))
-            {
-                OperatorVoiceInfo voiceInfo = voiceInfos.Where(info => info.Type == voiceItem.VoiceType).First();
-                props.MusicProperties.Artist = voiceInfo.CV;
-
-                OperatorVoiceItem voiceItemContainsFullData = voiceInfo.Voices.Where(voice => voice.VoiceId == voiceItem.VoiceId).First();
-                props.VideoProperties.Subtitle = voiceItemContainsFullData.VoiceText;
-                props.MusicProperties.Title = props.VideoProperties.Title = OpCodenameToNameMapping.TryGetValue(codename, out string? opName)
-                ? $"{opName} - {voiceItemContainsFullData.VoiceTitle} [{lang}]"
-                : $"{voiceItem.CharactorCodename} - {voiceItemContainsFullData.VoiceTitle} [{lang}]";
-            }
-            else
-            {
-                props.MusicProperties.Title = OpCodenameToNameMapping.TryGetValue(codename, out string? opName)
-                    ? $"{opName} [{lang}]"
-                    : $"{voiceItem.CharactorCodename} [{lang}]";
-            }
+            props.MusicProperties.Artist = cv;
+            props.VideoProperties.Subtitle = subtitle;
+            props.MusicProperties.Title = title;
+            props.VideoProperties.Title = title;
             media.ApplyDisplayProperties(props);
 
             Player.Source = media;

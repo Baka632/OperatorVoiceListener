@@ -1,21 +1,6 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
+using OperatorVoiceListener.Main.Models;
 using OperatorVoiceListener.Main.ViewModels;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using static System.Net.Mime.MediaTypeNames;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -39,6 +24,58 @@ namespace OperatorVoiceListener.Main.Views
         private async void StartVoicePlay(object sender, RoutedEventArgs e)
         {
             await ViewModel.StartVoicePlay();
+        }
+
+        private void OnSearchCodenameAutoSuggestBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                sender.ItemsSource = ViewModel.FindOperatorCodename(sender.Text);
+            }
+        }
+
+        private void OnSearchCodenameAutoSuggestBoxQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args.ChosenSuggestion is not null)
+            {
+                OperatorCodenameInfo codenameInfo = (OperatorCodenameInfo)args.ChosenSuggestion;
+                ViewModel.OperatorCodename = sender.Text = codenameInfo.Codename;
+            }
+            else
+            {
+                ViewModel.OperatorCodename = args.QueryText;
+            }
+        }
+
+        private void OnSearchCodenameAutoSuggestBoxLostFocus(object sender, RoutedEventArgs e)
+        {
+            AutoSuggestBox autoSuggestBox = (AutoSuggestBox)sender;
+            ViewModel.OperatorCodename = autoSuggestBox.Text;
+        }
+
+        private void OnSearchVoiceIdAutoSuggestBoxGotFocus(object sender, RoutedEventArgs e)
+        {
+            AutoSuggestBox autoSuggestBox = (AutoSuggestBox)sender;
+            autoSuggestBox.ItemsSource = ViewModel.FindCurrentOperatorVoiceId();
+        }
+
+        private void OnSearchVoiceIDAutoSuggestBoxQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args.ChosenSuggestion is not null)
+            {
+                OperatorIdTitleInfo codenameInfo = (OperatorIdTitleInfo)args.ChosenSuggestion;
+                ViewModel.VoiceID = sender.Text = codenameInfo.Id;
+            }
+            else
+            {
+                ViewModel.VoiceID = args.QueryText;
+            }
+        }
+
+        private void OnSearchVoiceIDAutoSuggestBoxLostFocus(object sender, RoutedEventArgs e)
+        {
+            AutoSuggestBox autoSuggestBox = (AutoSuggestBox)sender;
+            ViewModel.VoiceID = autoSuggestBox.Text;
         }
     }
 }
