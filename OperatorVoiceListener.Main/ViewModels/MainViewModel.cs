@@ -9,9 +9,7 @@ using System.Diagnostics;
 using Microsoft.UI.Dispatching;
 using System.Collections.Immutable;
 using OperatorVoiceListener.Main.Models;
-using System.Linq;
 using OperatorVoiceListener.Main.Helpers;
-using ArknightsResources.Operators.Models;
 
 namespace OperatorVoiceListener.Main.ViewModels
 {

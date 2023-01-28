@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Composition.SystemBackdrops;
-using OperatorVoiceListener.Main.ViewModels;
 using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -22,12 +21,19 @@ namespace OperatorVoiceListener.Main.Views
         public MainWindow()
         {
             this.InitializeComponent();
-            Title = "Operator Image Viewer";
+            Closed += MainWindow_Closed;
+            Title = "Operator Voice Listener";
             SetTitleBar(AppTitleBar);
-            TrySetMicaOrAcrylicBackdrop();
-            MainFrame.Navigate(typeof(MainPage));
+            _ = TrySetMicaOrAcrylicBackdrop();
+            _ = MainFrame.Navigate(typeof(MainPage));
         }
 
+        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        {
+            Environment.Exit(0);
+        }
+
+        [RequiresUnreferencedCode("")]
         bool TrySetMicaOrAcrylicBackdrop()
         {
             if (MicaController.IsSupported())

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
@@ -50,6 +50,15 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
+
+    <ItemGroup>
+        <TrimmerRootAssembly Include="ArknightsResources.Operators.VoiceResources.CN" />
+        <TrimmerRootAssembly Include="ArknightsResources.Operators.VoiceResources.EN" />
+        <TrimmerRootAssembly Include="ArknightsResources.Operators.VoiceResources.KR" />
+        <TrimmerRootAssembly Include="ArknightsResources.Operators.VoiceResources.JP" />
+        <TrimmerRootAssembly Include="ArknightsResources.Operators.VoiceResources.Custom" />
+        <TrimmerRootAssembly Include="OperatorVoiceListener.Main" />
+    </ItemGroup>
 
   <!-- 
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
