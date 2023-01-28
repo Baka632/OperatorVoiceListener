@@ -19,7 +19,7 @@ namespace OperatorVoiceListener.Main.Helpers
             OpCodenameToVoiceMapping = opCodenameToVoiceMapping;
         }
 
-        public (OperatorVoiceInfo?, OperatorVoiceItem?) GetFullVoiceDetail(OperatorVoiceItem item)
+        public (OperatorVoiceInfo?, OperatorVoiceLine?) GetFullVoiceDetail(OperatorVoiceLine item)
         {
             if (OpCodenameToVoiceMapping.TryGetValue(item.CharactorCodename, out OperatorVoiceInfo[]? voiceInfos))
             {
@@ -28,7 +28,7 @@ namespace OperatorVoiceListener.Main.Helpers
                 if (infos.Any())
                 {
                     OperatorVoiceInfo voiceInfo = infos.First();
-                    OperatorVoiceItem? voiceItem = (from OperatorVoiceItem? vi in voiceInfo.Voices where vi.Value.VoiceId == item.VoiceId select vi).FirstOrDefault();
+                    OperatorVoiceLine? voiceItem = (from OperatorVoiceLine? vi in voiceInfo.Voices where vi.Value.VoiceId == item.VoiceId select vi).FirstOrDefault();
                     return (voiceInfo, voiceItem);
                 }
                 else
@@ -42,7 +42,7 @@ namespace OperatorVoiceListener.Main.Helpers
             }
         }
 
-        public bool TryGetOperatorName(OperatorVoiceItem item, out string? opName)
+        public bool TryGetOperatorName(OperatorVoiceLine item, out string? opName)
         {
             string codename = item.CharactorCodename.Split('_')[0];
             if (OpCodenameToNameMapping.TryGetValue(codename, out string? name))

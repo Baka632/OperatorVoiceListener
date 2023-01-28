@@ -90,7 +90,7 @@ namespace OperatorVoiceListener.Main.ViewModels
         {
             ResetInfoBar();
             IsLoadingAudio = true;
-            OperatorVoiceItem voiceItem = new(OperatorCodename, VoiceID, string.Empty, string.Empty, VoiceType);
+            OperatorVoiceLine voiceItem = new(OperatorCodename, VoiceID, string.Empty, string.Empty, VoiceType);
 
             OperatorVoiceResourceHelper resourceHelper = VoiceType switch
             {
@@ -118,13 +118,13 @@ namespace OperatorVoiceListener.Main.ViewModels
                 };
 
                 byte[] voice = await resourceHelper.GetOperatorVoiceAsync(voiceItem);
-                (OperatorVoiceInfo?, OperatorVoiceItem?) voiceDetails = OperatorVoiceItemHelper.GetFullVoiceDetail(voiceItem);
+                (OperatorVoiceInfo?, OperatorVoiceLine?) voiceDetails = OperatorVoiceItemHelper.GetFullVoiceDetail(voiceItem);
                 if (voiceDetails.Item1 is not null && voiceDetails.Item2 is not null)
                 {
                     OperatorVoiceInfo voiceInfo = voiceDetails.Item1.Value;
                     cv = voiceInfo.CV;
 
-                    OperatorVoiceItem operatorVoiceItem = voiceDetails.Item2.Value;
+                    OperatorVoiceLine operatorVoiceItem = voiceDetails.Item2.Value;
                     Title = operatorVoiceItem.VoiceTitle;
                     subtitle = operatorVoiceItem.VoiceText;
                     title = OperatorVoiceItemHelper.TryGetOperatorName(voiceItem, out string? opName)
