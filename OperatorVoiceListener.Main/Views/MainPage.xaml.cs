@@ -16,7 +16,7 @@ namespace OperatorVoiceListener.Main.Views
         public MainPage()
         {
             this.InitializeComponent();
-            ViewModel = new MainViewModel(DispatcherQueue);
+            ViewModel = new MainViewModel();
             MediaPlayerElement.SetMediaPlayer(ViewModel.AudioService.Player);
         }
 

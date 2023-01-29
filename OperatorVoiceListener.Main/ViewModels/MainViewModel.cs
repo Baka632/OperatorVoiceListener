@@ -45,7 +45,7 @@ namespace OperatorVoiceListener.Main.ViewModels
         [ObservableProperty]
         private bool isSubtitleVisable = false;
 
-        private readonly DispatcherQueue MainDispatcherQueue;
+        private IEnumerable<OperatorCodenameInfo>? AllOperatorCodenameInfos;
         private readonly OperatorVoiceItemHelper OperatorVoiceItemHelper;
 
         internal OperatorVoiceType[] OperatorVoiceTypes = new OperatorVoiceType[]
@@ -62,10 +62,8 @@ namespace OperatorVoiceListener.Main.ViewModels
         public ImmutableDictionary<string, string> OpCodenameToNameMapping { get; }
         public ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMapping { get; }
 
-        public MainViewModel(DispatcherQueue queue)
+        public MainViewModel()
         {
-            MainDispatcherQueue = queue;
-
             OperatorTextResourceHelper textResourceHelper = new(ArknightsResources.Operators.TextResources.Properties.Resources.ResourceManager);
             OpCodenameToNameMapping = textResourceHelper.GetOperatorCodenameMapping(AvailableCultureInfos.ChineseSimplifiedCultureInfo);
             OpCodenameToVoiceMapping = textResourceHelper.GetAllOperatorVoiceInfos(AvailableCultureInfos.ChineseSimplifiedCultureInfo);
@@ -181,12 +179,20 @@ namespace OperatorVoiceListener.Main.ViewModels
         {
             if (string.IsNullOrWhiteSpace(text))
             {
-                var result = from codename in OpCodenameToVoiceMapping.Keys
-                             join codenameNamePair in OpCodenameToNameMapping on codename.Split('_')[0] equals codenameNamePair.Key
-                             select new OperatorCodenameInfo(codename, codenameNamePair.Value);
-                List<OperatorCodenameInfo> list = result.ToList();
-                list.Sort();
-                return list;
+                if (AllOperatorCodenameInfos is null)
+                {
+                    IEnumerable<OperatorCodenameInfo> result = from codename in OpCodenameToVoiceMapping.Keys
+                                                               join codenameNamePair in OpCodenameToNameMapping on codename.Split('_')[0] equals codenameNamePair.Key
+                                                               select new OperatorCodenameInfo(codename, codenameNamePair.Value);
+                    List<OperatorCodenameInfo> list = result.ToList();
+                    list.Sort();
+                    AllOperatorCodenameInfos = list;
+                    return list;
+                }
+                else
+                {
+                    return AllOperatorCodenameInfos;
+                }
             }
 
             List<OperatorCodenameInfo> target = new(20);

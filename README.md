@@ -11,6 +11,8 @@
 * [ArknightsResources/OperatorsVoiceResources](https://github.com/ArknightsResources/OperatorsVoiceResources) (提供语音资源的库)
 * [ArknightsResources/Utility](https://github.com/ArknightsResources/Utility) (读取语音资源的库)
 
+## 另请参阅
+[Operator Image Viewer](https://github.com/Baka632/OperatorImageViewer)
 
 ## 许可
 MIT 许可证
