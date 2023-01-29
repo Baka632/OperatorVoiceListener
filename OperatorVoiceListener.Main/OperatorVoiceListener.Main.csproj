@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArknightsResources.Operators.TextResources" Version="0.1.0-alpha" />
+    <PackageReference Include="ArknightsResources.Operators.TextResources" Version="0.1.1-alpha" />
     <PackageReference Include="ArknightsResources.Operators.VoiceResources.CN" Version="0.1.0-alpha" />
     <PackageReference Include="ArknightsResources.Operators.VoiceResources.Custom" Version="0.1.0-alpha" />
     <PackageReference Include="ArknightsResources.Operators.VoiceResources.EN" Version="0.1.1-alpha" />

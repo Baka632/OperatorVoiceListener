@@ -6,11 +6,11 @@ using JPVoiceRes = ArknightsResources.Operators.VoiceResources.JP.Properties.Res
 using KRVoiceRes = ArknightsResources.Operators.VoiceResources.KR.Properties.Resources;
 using Windows.Media.Playback;
 using System.Diagnostics;
-using Microsoft.UI.Dispatching;
 using System.Collections.Immutable;
 using OperatorVoiceListener.Main.Models;
 using OperatorVoiceListener.Main.Helpers;
-using Windows.ApplicationModel.Resources;
+using System.Globalization;
+using Windows.Globalization;
 
 namespace OperatorVoiceListener.Main.ViewModels
 {
@@ -65,8 +65,14 @@ namespace OperatorVoiceListener.Main.ViewModels
         public MainViewModel()
         {
             OperatorTextResourceHelper textResourceHelper = new(ArknightsResources.Operators.TextResources.Properties.Resources.ResourceManager);
-            OpCodenameToNameMapping = textResourceHelper.GetOperatorCodenameMapping(AvailableCultureInfos.ChineseSimplifiedCultureInfo);
-            OpCodenameToVoiceMapping = textResourceHelper.GetAllOperatorVoiceInfos(AvailableCultureInfos.ChineseSimplifiedCultureInfo);
+            CultureInfo cultureToUse = ApplicationLanguages.PrimaryLanguageOverride switch
+            {
+                "zh-CN" or "zh-Hans-CN" => AvailableCultureInfos.ChineseSimplifiedCultureInfo,
+                _ => AvailableCultureInfos.EnglishCultureInfo
+            };
+
+            OpCodenameToNameMapping = textResourceHelper.GetOperatorCodenameMapping(cultureToUse);
+            OpCodenameToVoiceMapping = textResourceHelper.GetAllOperatorVoiceInfos(cultureToUse);
             AudioService = new AudioService();
             AudioService.Player.MediaFailed += OnMediaPlayFailed;
             OperatorVoiceItemHelper = new OperatorVoiceItemHelper(OpCodenameToNameMapping, OpCodenameToVoiceMapping);
