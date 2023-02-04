@@ -123,6 +123,9 @@
   <data name="ChineseRegional" xml:space="preserve">
     <value>Chinese - Regional</value>
   </data>
+  <data name="ChineseSimplified" xml:space="preserve">
+    <value>Chinese(Simplified)</value>
+  </data>
   <data name="CvTextBlockRun.Text" xml:space="preserve">
     <value>CV:</value>
   </data>
@@ -132,6 +135,9 @@
   <data name="InfomationExpander.Header" xml:space="preserve">
     <value>Infomation</value>
   </data>
+  <data name="InfoNotAvailableMessage" xml:space="preserve">
+    <value>Infomation is not available now</value>
+  </data>
   <data name="Italian" xml:space="preserve">
     <value>Italian</value>
   </data>
@@ -140,6 +146,12 @@
   </data>
   <data name="Korean" xml:space="preserve">
     <value>Korean</value>
+  </data>
+  <data name="OperatorSubtitleLanguageComboBox.Header" xml:space="preserve">
+    <value>Subtitle Language</value>
+  </data>
+  <data name="OperatorSubtitleLanguageComboBox.PlaceholderText" xml:space="preserve">
+    <value>Select subtitle language</value>
   </data>
   <data name="OperatorVoiceTypeComboBox.Header" xml:space="preserve">
     <value>Voice type</value>
@@ -153,20 +165,20 @@
   <data name="SearchCodenameAutoSuggestBox.PlaceholderText" xml:space="preserve">
     <value>Enter Operator codename</value>
   </data>
-  <data name="SearchVoiceIdAutoSuggestBox.Header" xml:space="preserve">
-    <value>Voice ID</value>
-  </data>
-  <data name="SearchVoiceIdAutoSuggestBox.PlaceholderText" xml:space="preserve">
-    <value>Enter voice ID</value>
-  </data>
   <data name="StartVoicePlayButton.Content" xml:space="preserve">
     <value>Start play</value>
   </data>
   <data name="VoiceFileNotFoundMessage" xml:space="preserve">
-    <value>Please check whether the codename or voice ID you entered is correct.</value>
+    <value>Please check whether the codename, voice type or voice ID you entered is correct.</value>
   </data>
   <data name="VoiceFileNotFoundTitle" xml:space="preserve">
     <value>Unable to find voice file</value>
+  </data>
+  <data name="VoiceIdComboBox.Header" xml:space="preserve">
+    <value>Voice ID</value>
+  </data>
+  <data name="VoiceIdComboBox.PlaceholderText" xml:space="preserve">
+    <value>Select voice ID</value>
   </data>
   <data name="WinUI3BugWarningInfoBar.Message" xml:space="preserve">
     <value>Because of a bug of WinUI 3, there will be a decode error after playing OGG audio for 30 seconds. Please play audio and adjust the playing progress again.</value>

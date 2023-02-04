@@ -52,29 +52,11 @@ namespace OperatorVoiceListener.Main.Views
             ViewModel.OperatorCodename = autoSuggestBox.Text;
         }
 
-        private void OnSearchVoiceIdAutoSuggestBoxGotFocus(object sender, RoutedEventArgs e)
+        private void OnVoiceIdComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            AutoSuggestBox autoSuggestBox = (AutoSuggestBox)sender;
-            autoSuggestBox.ItemsSource = ViewModel.FindCurrentOperatorVoiceId();
-        }
-
-        private void OnSearchVoiceIDAutoSuggestBoxQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            if (args.ChosenSuggestion is not null)
-            {
-                OperatorIdTitleInfo codenameInfo = (OperatorIdTitleInfo)args.ChosenSuggestion;
-                ViewModel.VoiceID = sender.Text = codenameInfo.Id;
-            }
-            else
-            {
-                ViewModel.VoiceID = args.QueryText;
-            }
-        }
-
-        private void OnSearchVoiceIDAutoSuggestBoxLostFocus(object sender, RoutedEventArgs e)
-        {
-            AutoSuggestBox autoSuggestBox = (AutoSuggestBox)sender;
-            ViewModel.VoiceID = autoSuggestBox.Text;
+            ComboBox comboBox = (ComboBox)sender;
+            IEnumerable<OperatorIdTitleInfo> itemsSource = (IEnumerable<OperatorIdTitleInfo>)comboBox.ItemsSource;
+            ViewModel.VoiceID = itemsSource.ElementAtOrDefault(comboBox.SelectedIndex).Id;
         }
     }
 }

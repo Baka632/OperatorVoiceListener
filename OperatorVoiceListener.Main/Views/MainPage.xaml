@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:globalization="using:System.Globalization"
     xmlns:helper="using:OperatorVoiceListener.Main.Helpers"
     xmlns:local="using:OperatorVoiceListener.Main.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -15,6 +16,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <helper:OperatorVoiceTypeToStringConverter x:Key="OpVoiceTypeToStr" x:Name="OpVoiceTypeToStr" />
+        <helper:CultureInfoToStringConverter x:Key="CultureInfoToStr" x:Name="CultureInfoToStr" />
     </Page.Resources>
 
     <StackPanel Margin="11,10,11,0">
@@ -41,13 +43,12 @@
             </AutoSuggestBox.ItemTemplate>
         </AutoSuggestBox>
 
-        <AutoSuggestBox
-            x:Uid="SearchVoiceIdAutoSuggestBox"
+        <ComboBox
+            x:Uid="VoiceIdComboBox"
             Margin="0,0,0,10"
-            GotFocus="OnSearchVoiceIdAutoSuggestBoxGotFocus"
-            LostFocus="OnSearchVoiceIDAutoSuggestBoxLostFocus"
-            QuerySubmitted="OnSearchVoiceIDAutoSuggestBoxQuerySubmitted">
-            <AutoSuggestBox.ItemTemplate>
+            ItemsSource="{x:Bind ViewModel.CurrentOperatorVoiceIds, Mode=OneWay}"
+            SelectionChanged="OnVoiceIdComboBoxSelectionChanged">
+            <ComboBox.ItemTemplate>
                 <DataTemplate x:DataType="models:OperatorIdTitleInfo">
                     <TextBlock>
                         <Run Text="{x:Bind Id}" />
@@ -55,8 +56,8 @@
                         <Run Text="{x:Bind Title}" />
                     </TextBlock>
                 </DataTemplate>
-            </AutoSuggestBox.ItemTemplate>
-        </AutoSuggestBox>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
 
         <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
             <ComboBox
@@ -71,10 +72,20 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
-            <StackPanel
-                Margin="10,0,0,0"
-                VerticalAlignment="Bottom"
-                Orientation="Horizontal">
+            <ComboBox
+                x:Uid="OperatorSubtitleLanguageComboBox"
+                Margin="10,0,10,0"
+                HorizontalAlignment="Center"
+                ItemsSource="{x:Bind ViewModel.AvailableLangages}"
+                SelectedIndex="{x:Bind ViewModel.SubtitleLangageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="globalization:CultureInfo">
+                        <TextBlock Text="{x:Bind Converter={StaticResource CultureInfoToStr}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <StackPanel VerticalAlignment="Bottom" Orientation="Horizontal">
                 <Button
                     x:Uid="StartVoicePlayButton"
                     Margin="0,0,5,0"
@@ -96,21 +107,25 @@
             Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}" />
 
         <Expander
+            x:Uid="InfomationExpander"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             ExpandDirection="Down"
-            x:Uid="InfomationExpander"
             IsExpanded="True"
-            Visibility="{x:Bind ViewModel.IsSubtitleVisable, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.IsInfomationExpanderVisable, Mode=OneWay}">
             <StackPanel>
-                <TextBlock FontSize="16" TextWrapping="Wrap">
-                    <Run FontWeight="Bold" x:Uid="CvTextBlockRun" />
-                    <Run Text="{x:Bind ViewModel.Cv, Mode=OneWay}" />
+                <TextBlock
+                    FontSize="16"
+                    TextWrapping="Wrap">
+                    <Run x:Uid="CvTextBlockRun" FontWeight="Bold" />
+                    <Run Text="{x:Bind ViewModel.DisplayCv, Mode=OneWay}" />
                 </TextBlock>
 
-                <TextBlock FontSize="16" TextWrapping="Wrap">
-                    <Run FontWeight="Bold" Text="{x:Bind sys:String.Format('{0}：', ViewModel.Title), Mode=OneWay}" />
-                    <Run Text="{x:Bind ViewModel.Subtitle, Mode=OneWay}" />
+                <TextBlock
+                    FontSize="16"
+                    TextWrapping="Wrap">
+                    <Run FontWeight="Bold" Text="{x:Bind sys:String.Format('{0}：', ViewModel.DisplayTitle), Mode=OneWay}" />
+                    <Run Text="{x:Bind ViewModel.DisplaySubtitle, Mode=OneWay}" />
                 </TextBlock>
             </StackPanel>
         </Expander>

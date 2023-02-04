@@ -123,6 +123,9 @@
   <data name="ChineseRegional" xml:space="preserve">
     <value>中文 - 方言</value>
   </data>
+  <data name="ChineseSimplified" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
   <data name="CvTextBlockRun.Text" xml:space="preserve">
     <value>配音：</value>
   </data>
@@ -132,6 +135,9 @@
   <data name="InfomationExpander.Header" xml:space="preserve">
     <value>信息</value>
   </data>
+  <data name="InfoNotAvailableMessage" xml:space="preserve">
+    <value>信息不可用</value>
+  </data>
   <data name="Italian" xml:space="preserve">
     <value>意大利语</value>
   </data>
@@ -140,6 +146,12 @@
   </data>
   <data name="Korean" xml:space="preserve">
     <value>韩语</value>
+  </data>
+  <data name="OperatorSubtitleLanguageComboBox.Header" xml:space="preserve">
+    <value>字幕语言</value>
+  </data>
+  <data name="OperatorSubtitleLanguageComboBox.PlaceholderText" xml:space="preserve">
+    <value>选择字幕语言</value>
   </data>
   <data name="OperatorVoiceTypeComboBox.Header" xml:space="preserve">
     <value>语音种类</value>
@@ -153,20 +165,20 @@
   <data name="SearchCodenameAutoSuggestBox.PlaceholderText" xml:space="preserve">
     <value>输入干员代号</value>
   </data>
-  <data name="SearchVoiceIdAutoSuggestBox.Header" xml:space="preserve">
-    <value>语音ID</value>
-  </data>
-  <data name="SearchVoiceIdAutoSuggestBox.PlaceholderText" xml:space="preserve">
-    <value>输入语音ID</value>
-  </data>
   <data name="StartVoicePlayButton.Content" xml:space="preserve">
     <value>开始播放</value>
   </data>
   <data name="VoiceFileNotFoundMessage" xml:space="preserve">
-    <value>请检查你输入的干员代号或语音ID是否正确。</value>
+    <value>请检查你输入的干员代号、语音ID或语言种类是否正确。</value>
   </data>
   <data name="VoiceFileNotFoundTitle" xml:space="preserve">
     <value>无法找到语音文件</value>
+  </data>
+  <data name="VoiceIdComboBox.Header" xml:space="preserve">
+    <value>语音ID</value>
+  </data>
+  <data name="VoiceIdComboBox.PlaceholderText" xml:space="preserve">
+    <value>选择语音ID</value>
   </data>
   <data name="WinUI3BugWarningInfoBar.Message" xml:space="preserve">
     <value>由于WinUI 3的一个bug，OGG音频播放30秒后会出现解码错误，这时请重新开始播放并将播放进度调节到自己需要的位置。</value>

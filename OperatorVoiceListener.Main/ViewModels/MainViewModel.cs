@@ -11,25 +11,37 @@ using OperatorVoiceListener.Main.Models;
 using OperatorVoiceListener.Main.Helpers;
 using System.Globalization;
 using Windows.Globalization;
+using Microsoft.UI;
 
 namespace OperatorVoiceListener.Main.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CurrentOperatorVoiceIds))]
         private string operatorCodename = string.Empty;
         [ObservableProperty]
         private string voiceID = string.Empty;
         [ObservableProperty]
         private OperatorVoiceType voiceType;
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DisplaySubtitle))]
+        [NotifyPropertyChangedFor(nameof(DisplayTitle))]
+        [NotifyPropertyChangedFor(nameof(DisplayCv))]
         private int voiceTypeIndex;
         [ObservableProperty]
-        private string cv = string.Empty;
+        private CultureInfo subtitleCultureInfo;
         [ObservableProperty]
-        private string subtitle = string.Empty;
+        [NotifyPropertyChangedFor(nameof(DisplaySubtitle))]
+        [NotifyPropertyChangedFor(nameof(DisplayTitle))]
+        [NotifyPropertyChangedFor(nameof(DisplayCv))]
+        private int subtitleLangageIndex;
         [ObservableProperty]
-        private string title = string.Empty;
+        private string displayCv = string.Empty;
+        [ObservableProperty]
+        private string displaySubtitle = string.Empty;
+        [ObservableProperty]
+        private string displayTitle = string.Empty;
 
         [ObservableProperty]
         private string infoBarMessage = string.Empty;
@@ -43,10 +55,7 @@ namespace OperatorVoiceListener.Main.ViewModels
         [ObservableProperty]
         private bool isLoadingAudio;
         [ObservableProperty]
-        private bool isSubtitleVisable = false;
-
-        private IEnumerable<OperatorCodenameInfo>? AllOperatorCodenameInfos;
-        private readonly OperatorVoiceItemHelper OperatorVoiceItemHelper;
+        private bool isInfomationExpanderVisable = false;
 
         internal OperatorVoiceType[] OperatorVoiceTypes = new OperatorVoiceType[]
         {
@@ -58,24 +67,36 @@ namespace OperatorVoiceListener.Main.ViewModels
             OperatorVoiceType.Italian,
         };
 
+        internal CultureInfo[] AvailableLangages = new CultureInfo[]
+        {
+            AvailableCultureInfos.ChineseSimplifiedCultureInfo,
+            AvailableCultureInfos.EnglishCultureInfo
+        };
+
+        private readonly CultureInfo InvariantCultureInfo;
+
         public AudioService AudioService { get; }
-        public ImmutableDictionary<string, string> OpCodenameToNameMapping { get; }
-        public ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMapping { get; }
+        public IEnumerable<OperatorIdTitleInfo> CurrentOperatorVoiceIds => FindCurrentOperatorVoiceId();
+
+        private Dictionary<CultureInfo, ImmutableDictionary<string, string>> OpCodenameToNameMappingDict { get; } = new(2);
+        private Dictionary<CultureInfo, ImmutableDictionary<string, OperatorVoiceInfo[]>> OpCodenameToVoiceMappingDict { get; } = new(2);
+        private ImmutableDictionary<string, string> OpCodenameToNameMapping => OpCodenameToNameMappingDict[SubtitleCultureInfo];
+        private ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMapping => OpCodenameToVoiceMappingDict[SubtitleCultureInfo];
+        private ImmutableDictionary<string, string> OpCodenameToNameMappingInvariant => OpCodenameToNameMappingDict[InvariantCultureInfo];
+        private ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMappingInvariant => OpCodenameToVoiceMappingDict[InvariantCultureInfo];
+        private Dictionary<CultureInfo, IEnumerable<OperatorCodenameInfo>> AllOperatorCodenameDict { get; } = new(2);
 
         public MainViewModel()
         {
             OperatorTextResourceHelper textResourceHelper = new(ArknightsResources.Operators.TextResources.Properties.Resources.ResourceManager);
-            CultureInfo cultureToUse = ApplicationLanguages.PrimaryLanguageOverride switch
-            {
-                "zh-CN" or "zh-Hans-CN" => AvailableCultureInfos.ChineseSimplifiedCultureInfo,
-                _ => AvailableCultureInfos.EnglishCultureInfo
-            };
+            InvariantCultureInfo = subtitleCultureInfo = AvailableLangages.Contains(CultureInfo.CurrentUICulture)
+                ? CultureInfo.CurrentUICulture
+                : AvailableCultureInfos.EnglishCultureInfo;
 
-            OpCodenameToNameMapping = textResourceHelper.GetOperatorCodenameMapping(cultureToUse);
-            OpCodenameToVoiceMapping = textResourceHelper.GetAllOperatorVoiceInfos(cultureToUse);
+            OpCodenameToNameMappingDict[SubtitleCultureInfo] = textResourceHelper.GetOperatorCodenameMapping(SubtitleCultureInfo);
+            OpCodenameToVoiceMappingDict[SubtitleCultureInfo] = textResourceHelper.GetAllOperatorVoiceInfos(SubtitleCultureInfo);
             AudioService = new AudioService();
             AudioService.Player.MediaFailed += OnMediaPlayFailed;
-            OperatorVoiceItemHelper = new OperatorVoiceItemHelper(OpCodenameToNameMapping, OpCodenameToVoiceMapping);
         }
 
         private void OnMediaPlayFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
@@ -88,6 +109,55 @@ namespace OperatorVoiceListener.Main.ViewModels
         partial void OnVoiceTypeIndexChanged(int value)
         {
             VoiceType = OperatorVoiceTypes.ElementAtOrDefault(value);
+
+            OperatorVoiceLine voiceItem = new(OperatorCodename, VoiceID, string.Empty, string.Empty, VoiceType);
+            OperatorVoiceItemHelper voiceItemHelperInvariant = new(OpCodenameToNameMappingInvariant, OpCodenameToVoiceMappingInvariant);
+            (OperatorVoiceInfo? voiceInfo, OperatorVoiceLine? _) = voiceItemHelperInvariant.GetFullVoiceDetail(voiceItem);
+            DisplayCv = voiceInfo.HasValue ? voiceInfo.Value.CV : ReswHelper.GetReswString("InfoNotAvailableMessage");
+        }
+
+        partial void OnSubtitleLangageIndexChanged(int value)
+        {
+            CultureInfo? cultureToUse = AvailableLangages.ElementAtOrDefault(value);
+            if (cultureToUse is not null)
+            {
+                OperatorTextResourceHelper textResourceHelper = new(ArknightsResources.Operators.TextResources.Properties.Resources.ResourceManager);
+                if (!OpCodenameToNameMappingDict.TryGetValue(cultureToUse, out _))
+                {
+                    OpCodenameToNameMappingDict[cultureToUse] = textResourceHelper.GetOperatorCodenameMapping(cultureToUse);
+                }
+
+                if (!OpCodenameToVoiceMappingDict.TryGetValue(cultureToUse, out _))
+                {
+                    OpCodenameToVoiceMappingDict[cultureToUse] = textResourceHelper.GetAllOperatorVoiceInfos(cultureToUse);
+                }
+                SubtitleCultureInfo = cultureToUse;
+
+                //Setting to 'ChineseMandarin' doesn't affect the actual result here.
+                OperatorVoiceLine voiceItem = new(OperatorCodename, VoiceID, string.Empty, string.Empty, OperatorVoiceType.ChineseMandarin);
+
+                OperatorVoiceItemHelper voiceItemHelper = new(OpCodenameToNameMapping, OpCodenameToVoiceMapping);
+                (OperatorVoiceInfo? _, OperatorVoiceLine? voiceLine) = voiceItemHelper.GetFullVoiceDetail(voiceItem, true);
+
+                DisplaySubtitle = voiceLine.HasValue ? voiceLine.Value.VoiceText : ReswHelper.GetReswString("InfoNotAvailableMessage");
+            }
+        }
+
+        private void UpdateDisplayProperties()
+        {
+            OperatorVoiceLine voiceItemForCv = new(OperatorCodename, VoiceID, string.Empty, string.Empty, VoiceType);
+            OperatorVoiceItemHelper voiceItemHelperInvariant = new(OpCodenameToNameMappingInvariant, OpCodenameToVoiceMappingInvariant);
+            (OperatorVoiceInfo? voiceInfo, OperatorVoiceLine? voiceLineInvariant) = voiceItemHelperInvariant.GetFullVoiceDetail(voiceItemForCv);
+            DisplayCv = voiceInfo.HasValue ? voiceInfo.Value.CV : ReswHelper.GetReswString("InfoNotAvailableMessage");
+            DisplayTitle = voiceLineInvariant.HasValue ? voiceLineInvariant.Value.VoiceTitle : "?";
+
+            //Setting to 'ChineseMandarin' doesn't affect the actual result here.
+            OperatorVoiceLine voiceItemForSubtitle = new(OperatorCodename, VoiceID, string.Empty, string.Empty, OperatorVoiceType.ChineseMandarin);
+
+            OperatorVoiceItemHelper voiceItemHelper = new(OpCodenameToNameMapping, OpCodenameToVoiceMapping);
+            (OperatorVoiceInfo? _, OperatorVoiceLine? voiceLine) = voiceItemHelper.GetFullVoiceDetail(voiceItemForSubtitle, true);
+
+            DisplaySubtitle = voiceLine.HasValue ? voiceLine.Value.VoiceText : ReswHelper.GetReswString("InfoNotAvailableMessage");
         }
 
         public async Task StartVoicePlay()
@@ -122,35 +192,34 @@ namespace OperatorVoiceListener.Main.ViewModels
                 };
 
                 byte[] voice = await resourceHelper.GetOperatorVoiceAsync(voiceItem);
-                (OperatorVoiceInfo?, OperatorVoiceLine?) voiceDetails = OperatorVoiceItemHelper.GetFullVoiceDetail(voiceItem);
-                if (voiceDetails.Item1 is not null && voiceDetails.Item2 is not null)
+                OperatorVoiceItemHelper voiceItemHelper = new(OpCodenameToNameMappingInvariant, OpCodenameToVoiceMappingInvariant);
+                (OperatorVoiceInfo?, OperatorVoiceLine?) voiceDetails = voiceItemHelper.GetFullVoiceDetail(voiceItem);
+                if (voiceDetails.Item1.HasValue && voiceDetails.Item2.HasValue)
                 {
                     OperatorVoiceInfo voiceInfo = voiceDetails.Item1.Value;
                     cv = voiceInfo.CV;
 
                     OperatorVoiceLine operatorVoiceItem = voiceDetails.Item2.Value;
-                    Title = operatorVoiceItem.VoiceTitle;
                     subtitle = operatorVoiceItem.VoiceText;
-                    title = OperatorVoiceItemHelper.TryGetOperatorName(voiceItem, out string? opName)
+                    title = voiceItemHelper.TryGetOperatorName(voiceItem, out string? opName)
                     ? $"{opName} - {operatorVoiceItem.VoiceTitle} [{lang}]"
                     : $"{voiceItem.CharactorCodename} - {operatorVoiceItem.VoiceTitle} [{lang}]";
                 }
                 else
                 {
-                    title = OperatorVoiceItemHelper.TryGetOperatorName(voiceItem, out string? opName)
+                    title = voiceItemHelper.TryGetOperatorName(voiceItem, out string? opName)
                         ? $"{opName} [{lang}]"
                         : $"{voiceItem.CharactorCodename} [{lang}]";
                     cv = string.Empty;
                     subtitle = string.Empty;
-                    Title = string.Empty;
                 }
-                
-                Subtitle = subtitle;
-                Cv = cv;
+
                 await AudioService.PlayOperatorVoice(voice, title, subtitle, cv);
-                if (IsSubtitleVisable == false)
+                UpdateDisplayProperties();
+
+                if (IsInfomationExpanderVisable == false)
                 {
-                    IsSubtitleVisable = true;
+                    IsInfomationExpanderVisable = true;
                 }
             }
             catch (ArgumentException)
@@ -180,29 +249,30 @@ namespace OperatorVoiceListener.Main.ViewModels
         }
 
         public static bool ReverseBoolean(bool value) => !value;
+        public static Visibility ReverseBooleanToVisibility(bool value) => !value ? Visibility.Visible : Visibility.Collapsed;
 
         internal IEnumerable<OperatorCodenameInfo> FindOperatorCodename(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
-                if (AllOperatorCodenameInfos is null)
+                if (AllOperatorCodenameDict.TryGetValue(InvariantCultureInfo, out var infos))
                 {
-                    IEnumerable<OperatorCodenameInfo> result = from codename in OpCodenameToVoiceMapping.Keys
-                                                               join codenameNamePair in OpCodenameToNameMapping on codename.Split('_')[0] equals codenameNamePair.Key
-                                                               select new OperatorCodenameInfo(codename, codenameNamePair.Value);
-                    List<OperatorCodenameInfo> list = result.ToList();
-                    list.Sort();
-                    AllOperatorCodenameInfos = list;
-                    return list;
+                    return infos;
                 }
                 else
                 {
-                    return AllOperatorCodenameInfos;
+                    IEnumerable<OperatorCodenameInfo> result = from codename in OpCodenameToVoiceMappingInvariant.Keys
+                                                               join codenameNamePair in OpCodenameToNameMappingInvariant on codename.Split('_')[0] equals codenameNamePair.Key
+                                                               select new OperatorCodenameInfo(codename, codenameNamePair.Value);
+                    List<OperatorCodenameInfo> list = result.ToList();
+                    list.Sort();
+                    AllOperatorCodenameDict[InvariantCultureInfo] = list;
+                    return list;
                 }
             }
 
             List<OperatorCodenameInfo> target = new(20);
-            foreach (var item in OpCodenameToVoiceMapping.Keys)
+            foreach (var item in OpCodenameToVoiceMappingInvariant.Keys)
             {
                 if (item == "aprot")
                 {
@@ -211,7 +281,7 @@ namespace OperatorVoiceListener.Main.ViewModels
 
                 if (item.FirstOrDefault() == text.FirstOrDefault() && item.Contains(text))
                 {
-                    target.Add(new OperatorCodenameInfo(item, OpCodenameToNameMapping[item.Split('_')[0]]));
+                    target.Add(new OperatorCodenameInfo(item, OpCodenameToNameMappingInvariant[item.Split('_')[0]]));
                 }
             }
             target.Sort();
@@ -220,7 +290,7 @@ namespace OperatorVoiceListener.Main.ViewModels
 
         internal IEnumerable<OperatorIdTitleInfo> FindCurrentOperatorVoiceId()
         {
-            if (OpCodenameToVoiceMapping.TryGetValue(OperatorCodename, out OperatorVoiceInfo[]? voiceInfos))
+            if (OpCodenameToVoiceMappingInvariant.TryGetValue(OperatorCodename, out OperatorVoiceInfo[]? voiceInfos))
             {
                 var infos = from info in voiceInfos where info.Type == VoiceType select info;
 

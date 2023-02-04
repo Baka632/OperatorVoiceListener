@@ -1,8 +1,9 @@
 ﻿using System.Collections.Immutable;
+using System.Globalization;
 
 namespace OperatorVoiceListener.Main.Helpers
 {
-    public class OperatorVoiceItemHelper
+    public readonly struct OperatorVoiceItemHelper
     {
         private readonly ImmutableDictionary<string, string> OpCodenameToNameMapping;
         private readonly ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMapping;
@@ -13,7 +14,7 @@ namespace OperatorVoiceListener.Main.Helpers
             OpCodenameToVoiceMapping = opCodenameToVoiceMapping;
         }
 
-        public (OperatorVoiceInfo?, OperatorVoiceLine?) GetFullVoiceDetail(OperatorVoiceLine item)
+        public (OperatorVoiceInfo?, OperatorVoiceLine?) GetFullVoiceDetail(OperatorVoiceLine item, bool useAnyAvailableInfo = false)
         {
             if (OpCodenameToVoiceMapping.TryGetValue(item.CharactorCodename, out OperatorVoiceInfo[]? voiceInfos))
             {
@@ -27,6 +28,13 @@ namespace OperatorVoiceListener.Main.Helpers
                 }
                 else
                 {
+                    if (useAnyAvailableInfo)
+                    {
+                        OperatorVoiceInfo voiceInfo = voiceInfos.FirstOrDefault();
+                        OperatorVoiceLine? voiceItem = (from OperatorVoiceLine? vi in voiceInfo.Voices where vi.Value.VoiceId == item.VoiceId select vi).FirstOrDefault();
+                        return (voiceInfo, voiceItem);
+                    }
+
                     return (null, null);
                 }
             }
