@@ -4,14 +4,13 @@ using CNVoiceRes = ArknightsResources.Operators.VoiceResources.CN.Properties.Res
 using ENVoiceRes = ArknightsResources.Operators.VoiceResources.EN.Properties.Resources;
 using JPVoiceRes = ArknightsResources.Operators.VoiceResources.JP.Properties.Resources;
 using KRVoiceRes = ArknightsResources.Operators.VoiceResources.KR.Properties.Resources;
+using NoneVoiceRes = ArknightsResources.Operators.VoiceResources.None.Properties.Resources;
 using Windows.Media.Playback;
 using System.Diagnostics;
 using System.Collections.Immutable;
 using OperatorVoiceListener.Main.Models;
 using OperatorVoiceListener.Main.Helpers;
 using System.Globalization;
-using Windows.Globalization;
-using Microsoft.UI;
 
 namespace OperatorVoiceListener.Main.ViewModels
 {
@@ -23,7 +22,7 @@ namespace OperatorVoiceListener.Main.ViewModels
         [ObservableProperty]
         private string voiceID = string.Empty;
         [ObservableProperty]
-        private OperatorVoiceType voiceType;
+        private OperatorVoiceType voiceType = OperatorVoiceType.ChineseMandarin;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplaySubtitle))]
         [NotifyPropertyChangedFor(nameof(DisplayTitle))]
@@ -65,8 +64,10 @@ namespace OperatorVoiceListener.Main.ViewModels
             OperatorVoiceType.English,
             OperatorVoiceType.Korean,
             OperatorVoiceType.Italian,
+            OperatorVoiceType.None,
         };
 
+        //TODO: Don't use culture info, use VoiceType for subtitle
         internal CultureInfo[] AvailableLangages = new CultureInfo[]
         {
             AvailableCultureInfos.ChineseSimplifiedCultureInfo,
@@ -172,7 +173,8 @@ namespace OperatorVoiceListener.Main.ViewModels
                 OperatorVoiceType.English => new OperatorVoiceResourceHelper(ENVoiceRes.ResourceManager),
                 OperatorVoiceType.ChineseMandarin => new OperatorVoiceResourceHelper(CNVoiceRes.ResourceManager),
                 OperatorVoiceType.Japanese => new OperatorVoiceResourceHelper(JPVoiceRes.ResourceManager),
-                _ => new OperatorVoiceResourceHelper(KRVoiceRes.ResourceManager),
+                OperatorVoiceType.Korean => new OperatorVoiceResourceHelper(KRVoiceRes.ResourceManager),
+                _ => new OperatorVoiceResourceHelper(NoneVoiceRes.ResourceManager),
             };
 
             try
@@ -188,7 +190,7 @@ namespace OperatorVoiceListener.Main.ViewModels
                     OperatorVoiceType.English => ReswHelper.GetReswString("English"),
                     OperatorVoiceType.Korean => ReswHelper.GetReswString("Korean"),
                     OperatorVoiceType.Italian => ReswHelper.GetReswString("Italian"),
-                    _ => string.Empty,
+                    _ => ReswHelper.GetReswString("NoneVoice"),
                 };
 
                 byte[] voice = await resourceHelper.GetOperatorVoiceAsync(voiceItem);

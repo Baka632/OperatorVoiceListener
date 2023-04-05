@@ -186,4 +186,7 @@
   <data name="WinUI3BugWarningInfoBar.Title" xml:space="preserve">
     <value>Notice</value>
   </data>
+  <data name="NoneVoice" xml:space="preserve">
+    <value>No language tendency</value>
+  </data>
 </root>
