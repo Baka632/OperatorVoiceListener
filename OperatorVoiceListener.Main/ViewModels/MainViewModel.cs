@@ -22,6 +22,7 @@ namespace OperatorVoiceListener.Main.ViewModels
         [ObservableProperty]
         private string voiceID = string.Empty;
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CurrentOperatorVoiceIds))]
         private OperatorVoiceType voiceType = OperatorVoiceType.ChineseMandarin;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplaySubtitle))]

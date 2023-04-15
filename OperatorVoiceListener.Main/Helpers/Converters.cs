@@ -16,6 +16,7 @@ namespace OperatorVoiceListener.Main.Helpers
                     OperatorVoiceType.English => ReswHelper.GetReswString("English"),
                     OperatorVoiceType.Korean => ReswHelper.GetReswString("Korean"),
                     OperatorVoiceType.Italian => ReswHelper.GetReswString("Italian"),
+                    OperatorVoiceType.None => ReswHelper.GetReswString("NoneVoice"),
                     _ => string.Empty,
                 },
                 _ => DependencyProperty.UnsetValue,
