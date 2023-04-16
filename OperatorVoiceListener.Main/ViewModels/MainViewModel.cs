@@ -17,31 +17,25 @@ namespace OperatorVoiceListener.Main.ViewModels
     public partial class MainViewModel : ObservableObject
     {
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(CurrentOperatorVoiceIds))]
         private string operatorCodename = string.Empty;
         [ObservableProperty]
         private string voiceID = string.Empty;
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(CurrentOperatorVoiceIds))]
-        private OperatorVoiceType voiceType = OperatorVoiceType.ChineseMandarin;
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(DisplaySubtitle))]
-        [NotifyPropertyChangedFor(nameof(DisplayTitle))]
-        [NotifyPropertyChangedFor(nameof(DisplayCv))]
         private int voiceTypeIndex;
         [ObservableProperty]
-        private CultureInfo subtitleCultureInfo;
+        private LanguageType subtitleLanguageType;
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(DisplaySubtitle))]
-        [NotifyPropertyChangedFor(nameof(DisplayTitle))]
-        [NotifyPropertyChangedFor(nameof(DisplayCv))]
-        private int subtitleLangageIndex;
+        private int subtitleLanguageIndex;
         [ObservableProperty]
         private string displayCv = string.Empty;
         [ObservableProperty]
         private string displaySubtitle = string.Empty;
         [ObservableProperty]
         private string displayTitle = string.Empty;
+        [ObservableProperty]
+        private bool isLoadingAudio;
+        [ObservableProperty]
+        private string doctorName = string.Empty;
 
         [ObservableProperty]
         private string infoBarMessage = string.Empty;
@@ -51,11 +45,18 @@ namespace OperatorVoiceListener.Main.ViewModels
         private bool infoBarOpen;
         [ObservableProperty]
         private InfoBarSeverity infoBarSeverity;
-
         [ObservableProperty]
-        private bool isLoadingAudio;
-        [ObservableProperty]
-        private bool isInfomationExpanderVisable = false;
+        private bool isInformationExpanderVisible = false;
+        public AudioService AudioService { get; }
+        public IEnumerable<OperatorIdTitleInfo> CurrentOperatorVoiceIds => FindCurrentOperatorVoiceId();
+        private OperatorVoiceType VoiceType { get; set; } = OperatorVoiceType.ChineseMandarin;
+        private Dictionary<LanguageType, ImmutableDictionary<string, string>> OpCodenameToNameMappingDict { get; } = new(2);
+        private Dictionary<LanguageType, ImmutableDictionary<string, OperatorVoiceInfo[]>> OpCodenameToVoiceMappingDict { get; } = new(2);
+        private ImmutableDictionary<string, string> OpCodenameToNameMapping => OpCodenameToNameMappingDict[SubtitleLanguageType];
+        private ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMapping => OpCodenameToVoiceMappingDict[SubtitleLanguageType];
+        private ImmutableDictionary<string, string> OpCodenameToNameMappingInvariant => OpCodenameToNameMappingDict[InvariantLanguageType];
+        private ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMappingInvariant => OpCodenameToVoiceMappingDict[InvariantLanguageType];
+        private Dictionary<LanguageType, IEnumerable<OperatorCodenameInfo>> AllOperatorCodenameDict { get; } = new(2);
 
         internal OperatorVoiceType[] OperatorVoiceTypes = new OperatorVoiceType[]
         {
@@ -68,35 +69,37 @@ namespace OperatorVoiceListener.Main.ViewModels
             OperatorVoiceType.None,
         };
 
-        //TODO: Don't use culture info, use VoiceType for subtitle
-        internal CultureInfo[] AvailableLangages = new CultureInfo[]
+        internal LanguageType[] AvailableLanguages = new LanguageType[]
         {
-            AvailableCultureInfos.ChineseSimplifiedCultureInfo,
-            AvailableCultureInfos.EnglishCultureInfo
+            //TODO: Add uncomment language when it is ready
+
+            LanguageType.ChineseSimplified,
+            //SubtitleLanguageType.ChineseTraditional,
+            LanguageType.English,
+            //SubtitleLanguageType.Japanese,
+            //SubtitleLanguageType.Korean,
         };
 
-        private readonly CultureInfo InvariantCultureInfo;
-
-        public AudioService AudioService { get; }
-        public IEnumerable<OperatorIdTitleInfo> CurrentOperatorVoiceIds => FindCurrentOperatorVoiceId();
-
-        private Dictionary<CultureInfo, ImmutableDictionary<string, string>> OpCodenameToNameMappingDict { get; } = new(2);
-        private Dictionary<CultureInfo, ImmutableDictionary<string, OperatorVoiceInfo[]>> OpCodenameToVoiceMappingDict { get; } = new(2);
-        private ImmutableDictionary<string, string> OpCodenameToNameMapping => OpCodenameToNameMappingDict[SubtitleCultureInfo];
-        private ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMapping => OpCodenameToVoiceMappingDict[SubtitleCultureInfo];
-        private ImmutableDictionary<string, string> OpCodenameToNameMappingInvariant => OpCodenameToNameMappingDict[InvariantCultureInfo];
-        private ImmutableDictionary<string, OperatorVoiceInfo[]> OpCodenameToVoiceMappingInvariant => OpCodenameToVoiceMappingDict[InvariantCultureInfo];
-        private Dictionary<CultureInfo, IEnumerable<OperatorCodenameInfo>> AllOperatorCodenameDict { get; } = new(2);
+        private readonly LanguageType InvariantLanguageType;
+        private CurrentPlayingVoiceInfo CurrentPlayingVoiceInfo;
+        private const string DOCTOR_NAME_PLACEHOLDER = "{@nickname}";
 
         public MainViewModel()
         {
             OperatorTextResourceHelper textResourceHelper = new(ArknightsResources.Operators.TextResources.Properties.Resources.ResourceManager);
-            InvariantCultureInfo = subtitleCultureInfo = AvailableLangages.Contains(CultureInfo.CurrentUICulture)
-                ? CultureInfo.CurrentUICulture
-                : AvailableCultureInfos.EnglishCultureInfo;
+            InvariantLanguageType = CultureInfo.CurrentUICulture.Name.ToLowerInvariant() switch
+            {
+                //TODO: Uncomment if available
 
-            OpCodenameToNameMappingDict[SubtitleCultureInfo] = textResourceHelper.GetOperatorCodenameMapping(SubtitleCultureInfo);
-            OpCodenameToVoiceMappingDict[SubtitleCultureInfo] = textResourceHelper.GetAllOperatorVoiceInfos(SubtitleCultureInfo);
+                "zh-hans" or "zh-cn" => LanguageType.ChineseSimplified,
+                //"zh-hant" or "zh-tw" or "zh-hk" or "zh-mo" => LanguageType.ChineseTraditional,
+                //"ja-jp"=> LanguageType.Japanese,
+                //"ko-kr" => LanguageType.Korean,
+                _ => LanguageType.English,
+            };
+
+            OpCodenameToNameMappingDict[SubtitleLanguageType] = textResourceHelper.GetOperatorCodenameMapping(SubtitleLanguageType.AsCultureInfo());
+            OpCodenameToVoiceMappingDict[SubtitleLanguageType] = textResourceHelper.GetAllOperatorVoiceInfos(SubtitleLanguageType.AsCultureInfo());
             AudioService = new AudioService();
             AudioService.Player.MediaFailed += OnMediaPlayFailed;
         }
@@ -111,38 +114,29 @@ namespace OperatorVoiceListener.Main.ViewModels
         partial void OnVoiceTypeIndexChanged(int value)
         {
             VoiceType = OperatorVoiceTypes.ElementAtOrDefault(value);
-
-            OperatorVoiceLine voiceItem = new(OperatorCodename, VoiceID, string.Empty, string.Empty, VoiceType);
-            OperatorVoiceItemHelper voiceItemHelperInvariant = new(OpCodenameToNameMappingInvariant, OpCodenameToVoiceMappingInvariant);
-            (OperatorVoiceInfo? voiceInfo, OperatorVoiceLine? _) = voiceItemHelperInvariant.GetFullVoiceDetail(voiceItem);
-            DisplayCv = voiceInfo.HasValue ? voiceInfo.Value.CV : ReswHelper.GetReswString("InfoNotAvailableMessage");
         }
 
-        partial void OnSubtitleLangageIndexChanged(int value)
+        partial void OnSubtitleLanguageIndexChanged(int value)
         {
-            CultureInfo? cultureToUse = AvailableLangages.ElementAtOrDefault(value);
-            if (cultureToUse is not null)
+            LanguageType langType = AvailableLanguages.ElementAtOrDefault(value);
+            OperatorTextResourceHelper textResourceHelper = new(ArknightsResources.Operators.TextResources.Properties.Resources.ResourceManager);
+            if (!OpCodenameToNameMappingDict.TryGetValue(langType, out _))
             {
-                OperatorTextResourceHelper textResourceHelper = new(ArknightsResources.Operators.TextResources.Properties.Resources.ResourceManager);
-                if (!OpCodenameToNameMappingDict.TryGetValue(cultureToUse, out _))
-                {
-                    OpCodenameToNameMappingDict[cultureToUse] = textResourceHelper.GetOperatorCodenameMapping(cultureToUse);
-                }
-
-                if (!OpCodenameToVoiceMappingDict.TryGetValue(cultureToUse, out _))
-                {
-                    OpCodenameToVoiceMappingDict[cultureToUse] = textResourceHelper.GetAllOperatorVoiceInfos(cultureToUse);
-                }
-                SubtitleCultureInfo = cultureToUse;
-
-                //Setting to 'ChineseMandarin' doesn't affect the actual result here.
-                OperatorVoiceLine voiceItem = new(OperatorCodename, VoiceID, string.Empty, string.Empty, OperatorVoiceType.ChineseMandarin);
-
-                OperatorVoiceItemHelper voiceItemHelper = new(OpCodenameToNameMapping, OpCodenameToVoiceMapping);
-                (OperatorVoiceInfo? _, OperatorVoiceLine? voiceLine) = voiceItemHelper.GetFullVoiceDetail(voiceItem, true);
-
-                DisplaySubtitle = voiceLine.HasValue ? voiceLine.Value.VoiceText : ReswHelper.GetReswString("InfoNotAvailableMessage");
+                OpCodenameToNameMappingDict[langType] = textResourceHelper.GetOperatorCodenameMapping(langType.AsCultureInfo());
             }
+
+            if (!OpCodenameToVoiceMappingDict.TryGetValue(langType, out _))
+            {
+                OpCodenameToVoiceMappingDict[langType] = textResourceHelper.GetAllOperatorVoiceInfos(langType.AsCultureInfo());
+            }
+            SubtitleLanguageType = langType;
+
+            OperatorVoiceLine voiceItem = new(CurrentPlayingVoiceInfo.OperatorCodename, CurrentPlayingVoiceInfo.VoiceID, string.Empty, string.Empty, CurrentPlayingVoiceInfo.VoiceType);
+
+            OperatorVoiceItemHelper voiceItemHelper = new(OpCodenameToNameMapping, OpCodenameToVoiceMapping);
+            (OperatorVoiceInfo? _, OperatorVoiceLine? voiceLine) = voiceItemHelper.GetFullVoiceDetail(voiceItem);
+
+            DisplaySubtitle = voiceLine.HasValue ? voiceLine.Value.VoiceText.Replace(DOCTOR_NAME_PLACEHOLDER, DoctorName) : ReswHelper.GetReswString("InfoNotAvailableMessage");
         }
 
         private void UpdateDisplayProperties()
@@ -153,13 +147,12 @@ namespace OperatorVoiceListener.Main.ViewModels
             DisplayCv = voiceInfo.HasValue ? voiceInfo.Value.CV : ReswHelper.GetReswString("InfoNotAvailableMessage");
             DisplayTitle = voiceLineInvariant.HasValue ? voiceLineInvariant.Value.VoiceTitle : "?";
 
-            //Setting to 'ChineseMandarin' doesn't affect the actual result here.
-            OperatorVoiceLine voiceItemForSubtitle = new(OperatorCodename, VoiceID, string.Empty, string.Empty, OperatorVoiceType.ChineseMandarin);
+            OperatorVoiceLine voiceItemForSubtitle = new(OperatorCodename, VoiceID, string.Empty, string.Empty, VoiceType);
 
             OperatorVoiceItemHelper voiceItemHelper = new(OpCodenameToNameMapping, OpCodenameToVoiceMapping);
-            (OperatorVoiceInfo? _, OperatorVoiceLine? voiceLine) = voiceItemHelper.GetFullVoiceDetail(voiceItemForSubtitle, true);
+            (OperatorVoiceInfo? _, OperatorVoiceLine? voiceLine) = voiceItemHelper.GetFullVoiceDetail(voiceItemForSubtitle);
 
-            DisplaySubtitle = voiceLine.HasValue ? voiceLine.Value.VoiceText : ReswHelper.GetReswString("InfoNotAvailableMessage");
+            DisplaySubtitle = voiceLine.HasValue ? voiceLine.Value.VoiceText.Replace(DOCTOR_NAME_PLACEHOLDER, DoctorName) : ReswHelper.GetReswString("InfoNotAvailableMessage");
         }
 
         public async Task StartVoicePlay()
@@ -218,11 +211,12 @@ namespace OperatorVoiceListener.Main.ViewModels
                 }
 
                 await AudioService.PlayOperatorVoice(voice, title, subtitle, cv);
+                CurrentPlayingVoiceInfo = new(OperatorCodename,VoiceID,VoiceType);
                 UpdateDisplayProperties();
 
-                if (IsInfomationExpanderVisable == false)
+                if (IsInformationExpanderVisible == false)
                 {
-                    IsInfomationExpanderVisable = true;
+                    IsInformationExpanderVisible = true;
                 }
             }
             catch (ArgumentException)
@@ -258,7 +252,7 @@ namespace OperatorVoiceListener.Main.ViewModels
         {
             if (string.IsNullOrWhiteSpace(text))
             {
-                if (AllOperatorCodenameDict.TryGetValue(InvariantCultureInfo, out var infos))
+                if (AllOperatorCodenameDict.TryGetValue(InvariantLanguageType, out var infos))
                 {
                     return infos;
                 }
@@ -269,7 +263,7 @@ namespace OperatorVoiceListener.Main.ViewModels
                                                                select new OperatorCodenameInfo(codename, codenameNamePair.Value);
                     List<OperatorCodenameInfo> list = result.ToList();
                     list.Sort();
-                    AllOperatorCodenameDict[InvariantCultureInfo] = list;
+                    AllOperatorCodenameDict[InvariantLanguageType] = list;
                     return list;
                 }
             }

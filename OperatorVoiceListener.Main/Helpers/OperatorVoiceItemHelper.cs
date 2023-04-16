@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Globalization;
 
 namespace OperatorVoiceListener.Main.Helpers
 {
@@ -14,13 +13,13 @@ namespace OperatorVoiceListener.Main.Helpers
             OpCodenameToVoiceMapping = opCodenameToVoiceMapping;
         }
 
-        public (OperatorVoiceInfo?, OperatorVoiceLine?) GetFullVoiceDetail(OperatorVoiceLine item, bool useAnyAvailableInfo = false)
+        public (OperatorVoiceInfo?, OperatorVoiceLine?) GetFullVoiceDetail(OperatorVoiceLine item)
         {
             if (OpCodenameToVoiceMapping.TryGetValue(item.CharactorCodename, out OperatorVoiceInfo[]? voiceInfos))
             {
                 IEnumerable<OperatorVoiceInfo> infos = from info in voiceInfos where info.Type == item.VoiceType select info;
 
-                if (infos.Any())
+                if (item.VoiceType == OperatorVoiceType.ChineseRegional || infos.Any())
                 {
                     OperatorVoiceInfo voiceInfo = infos.First();
                     OperatorVoiceLine? voiceItem = (from OperatorVoiceLine? vi in voiceInfo.Voices where vi.Value.VoiceId == item.VoiceId select vi).FirstOrDefault();
@@ -28,14 +27,9 @@ namespace OperatorVoiceListener.Main.Helpers
                 }
                 else
                 {
-                    if (useAnyAvailableInfo)
-                    {
-                        OperatorVoiceInfo voiceInfo = voiceInfos.FirstOrDefault();
-                        OperatorVoiceLine? voiceItem = (from OperatorVoiceLine? vi in voiceInfo.Voices where vi.Value.VoiceId == item.VoiceId select vi).FirstOrDefault();
-                        return (voiceInfo, voiceItem);
-                    }
-
-                    return (null, null);
+                    OperatorVoiceInfo voiceInfo = voiceInfos.FirstOrDefault();
+                    OperatorVoiceLine? voiceItem = (from OperatorVoiceLine? vi in voiceInfo.Voices where vi.Value.VoiceId == item.VoiceId select vi).FirstOrDefault();
+                    return (voiceInfo, voiceItem);
                 }
             }
             else

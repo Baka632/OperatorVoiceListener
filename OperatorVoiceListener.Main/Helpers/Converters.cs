@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using OperatorVoiceListener.Main.Models;
+using System.Globalization;
 
 namespace OperatorVoiceListener.Main.Helpers
 {
@@ -51,6 +52,31 @@ namespace OperatorVoiceListener.Main.Helpers
                 default:
                     return DependencyProperty.UnsetValue;
             }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class LanguageTypeToStringConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            return value switch
+            {
+                LanguageType type => type switch
+                {
+                    LanguageType.ChineseTraditional => ReswHelper.GetReswString("ChineseTraditional"),
+                    LanguageType.ChineseSimplified => ReswHelper.GetReswString("ChineseSimplified"),
+                    LanguageType.Japanese => ReswHelper.GetReswString("Japanese"),
+                    LanguageType.English => ReswHelper.GetReswString("English"),
+                    LanguageType.Korean => ReswHelper.GetReswString("Korean"),
+                    _ => string.Empty,
+                },
+                _ => DependencyProperty.UnsetValue
+            };
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

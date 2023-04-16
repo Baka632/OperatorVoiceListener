@@ -17,6 +17,7 @@
     <Page.Resources>
         <helper:OperatorVoiceTypeToStringConverter x:Key="OpVoiceTypeToStr" x:Name="OpVoiceTypeToStr" />
         <helper:CultureInfoToStringConverter x:Key="CultureInfoToStr" x:Name="CultureInfoToStr" />
+        <helper:LanguageTypeToStringConverter x:Key="LanguageTypeToStr" x:Name="LanguageTypeToStr" />
     </Page.Resources>
 
     <StackPanel Margin="11,10,11,0">
@@ -29,8 +30,7 @@
         <AutoSuggestBox
             x:Uid="SearchCodenameAutoSuggestBox"
             Margin="0,0,0,5"
-            LostFocus="OnSearchCodenameAutoSuggestBoxLostFocus"
-            QuerySubmitted="OnSearchCodenameAutoSuggestBoxQuerySubmitted"
+            Text="{x:Bind ViewModel.OperatorCodename, Mode=TwoWay}"
             TextChanged="OnSearchCodenameAutoSuggestBoxTextChanged">
             <AutoSuggestBox.ItemTemplate>
                 <DataTemplate x:DataType="models:OperatorCodenameInfo">
@@ -43,12 +43,12 @@
             </AutoSuggestBox.ItemTemplate>
         </AutoSuggestBox>
 
-        <ComboBox
-            x:Uid="VoiceIdComboBox"
-            Margin="0,0,0,10"
-            ItemsSource="{x:Bind ViewModel.CurrentOperatorVoiceIds, Mode=OneWay}"
-            SelectionChanged="OnVoiceIdComboBoxSelectionChanged">
-            <ComboBox.ItemTemplate>
+        <AutoSuggestBox
+            x:Uid="VoiceIdAutoSuggestBox"
+            Margin="0,0,0,5"
+            GotFocus="OnVoiceIdAutoSuggestBoxGotFocus"
+            Text="{x:Bind ViewModel.VoiceID, Mode=TwoWay}">
+            <AutoSuggestBox.ItemTemplate>
                 <DataTemplate x:DataType="models:OperatorIdTitleInfo">
                     <TextBlock>
                         <Run Text="{x:Bind Id}" />
@@ -56,8 +56,13 @@
                         <Run Text="{x:Bind Title}" />
                     </TextBlock>
                 </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+            </AutoSuggestBox.ItemTemplate>
+        </AutoSuggestBox>
+
+        <TextBox
+            x:Uid="DoctorNameTextBox"
+            Margin="0,0,0,10"
+            Text="{x:Bind ViewModel.DoctorName, Mode=TwoWay}" />
 
         <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
             <ComboBox
@@ -76,11 +81,11 @@
                 x:Uid="OperatorSubtitleLanguageComboBox"
                 Margin="10,0,10,0"
                 HorizontalAlignment="Center"
-                ItemsSource="{x:Bind ViewModel.AvailableLangages}"
-                SelectedIndex="{x:Bind ViewModel.SubtitleLangageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                ItemsSource="{x:Bind ViewModel.AvailableLanguages}"
+                SelectedIndex="{x:Bind ViewModel.SubtitleLanguageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="globalization:CultureInfo">
-                        <TextBlock Text="{x:Bind Converter={StaticResource CultureInfoToStr}}" />
+                    <DataTemplate x:DataType="models:LanguageType">
+                        <TextBlock Text="{x:Bind Converter={StaticResource LanguageTypeToStr}}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
@@ -112,21 +117,21 @@
             VerticalAlignment="Center"
             ExpandDirection="Down"
             IsExpanded="True"
-            Visibility="{x:Bind ViewModel.IsInfomationExpanderVisable, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.IsInformationExpanderVisible, Mode=OneWay}">
             <StackPanel>
-                <TextBlock
-                    FontSize="16"
-                    TextWrapping="Wrap">
-                    <Run x:Uid="CvTextBlockRun" FontWeight="Bold" />
-                    <Run Text="{x:Bind ViewModel.DisplayCv, Mode=OneWay}" />
-                </TextBlock>
+                <RichTextBlock FontSize="16" TextWrapping="Wrap">
+                    <Paragraph>
+                        <Run x:Uid="CvTextBlockRun" FontWeight="Bold" />
+                        <Run Text="{x:Bind ViewModel.DisplayCv, Mode=OneWay}" />
+                    </Paragraph>
+                </RichTextBlock>
 
-                <TextBlock
-                    FontSize="16"
-                    TextWrapping="Wrap">
-                    <Run FontWeight="Bold" Text="{x:Bind sys:String.Format('{0}：', ViewModel.DisplayTitle), Mode=OneWay}" />
-                    <Run Text="{x:Bind ViewModel.DisplaySubtitle, Mode=OneWay}" />
-                </TextBlock>
+                <RichTextBlock FontSize="16" TextWrapping="Wrap">
+                    <Paragraph>
+                        <Run FontWeight="Bold" Text="{x:Bind sys:String.Format('{0}：', ViewModel.DisplayTitle), Mode=OneWay}" />
+                        <Run Text="{x:Bind ViewModel.DisplaySubtitle, Mode=OneWay}" />
+                    </Paragraph>
+                </RichTextBlock>
             </StackPanel>
         </Expander>
 

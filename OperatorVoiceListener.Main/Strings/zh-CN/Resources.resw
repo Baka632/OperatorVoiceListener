@@ -151,7 +151,7 @@
     <value>字幕语言</value>
   </data>
   <data name="OperatorSubtitleLanguageComboBox.PlaceholderText" xml:space="preserve">
-    <value>选择字幕语言</value>
+    <value>键入字幕语言</value>
   </data>
   <data name="OperatorVoiceTypeComboBox.Header" xml:space="preserve">
     <value>语音种类</value>
@@ -174,10 +174,10 @@
   <data name="VoiceFileNotFoundTitle" xml:space="preserve">
     <value>无法找到语音文件</value>
   </data>
-  <data name="VoiceIdComboBox.Header" xml:space="preserve">
+  <data name="VoiceIdAutoSuggestBox.Header" xml:space="preserve">
     <value>语音ID</value>
   </data>
-  <data name="VoiceIdComboBox.PlaceholderText" xml:space="preserve">
+  <data name="VoiceIdAutoSuggestBox.PlaceholderText" xml:space="preserve">
     <value>选择语音ID</value>
   </data>
   <data name="WinUI3BugWarningInfoBar.Message" xml:space="preserve">
@@ -188,5 +188,14 @@
   </data>
   <data name="NoneVoice" xml:space="preserve">
     <value>无语言倾向</value>
+  </data>
+  <data name="ChineseTranditonal" xml:space="preserve">
+    <value>繁体中文</value>
+  </data>
+  <data name="DoctorNameTextBox.Header" xml:space="preserve">
+    <value>博士昵称</value>
+  </data>
+  <data name="DoctorNameTextBox.PlaceholderText" xml:space="preserve">
+    <value>输入博士昵称</value>
   </data>
 </root>
