@@ -21,13 +21,25 @@ namespace OperatorVoiceListener.Main.Helpers
 
                 if (item.VoiceType == OperatorVoiceType.ChineseRegional || infos.Any())
                 {
-                    OperatorVoiceInfo voiceInfo = infos.First();
+                    OperatorVoiceInfo voiceInfo = infos.FirstOrDefault();
+
+                    if (voiceInfo.Voices == null || voiceInfo.CV == null)
+                    {
+                        return (null,null);
+                    }
+
                     OperatorVoiceLine? voiceItem = (from OperatorVoiceLine? vi in voiceInfo.Voices where vi.Value.VoiceId == item.VoiceId select vi).FirstOrDefault();
                     return (voiceInfo, voiceItem);
                 }
                 else
                 {
                     OperatorVoiceInfo voiceInfo = voiceInfos.FirstOrDefault();
+
+                    if (voiceInfo.Voices == null || voiceInfo.CV == null)
+                    {
+                        return (null, null);
+                    }
+
                     OperatorVoiceLine? voiceItem = (from OperatorVoiceLine? vi in voiceInfo.Voices where vi.Value.VoiceId == item.VoiceId select vi).FirstOrDefault();
                     return (voiceInfo, voiceItem);
                 }
